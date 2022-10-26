@@ -1,26 +1,32 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from 'react';
+import './App.scss';
+import Timer from './Timer';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+interface AppProps {
+    title?: string;
+}
+
+interface AppState {
+    time: number;
+}
+
+class App extends Component<AppProps, AppState> {
+    state: AppState = {
+        time: 0,
+    };
+
+    getClickHandler() {
+        return () => this.setState({ time: Math.floor(Math.random() * 10) });
+    }
+
+    render() {
+        return (
+            <div className='App'>
+                <Timer time={this.state.time} />
+                <button onClick={this.getClickHandler()}>set</button>
+            </div>
+        );
+    }
 }
 
 export default App;
