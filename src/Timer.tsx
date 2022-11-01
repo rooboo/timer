@@ -9,21 +9,15 @@ interface TimerState {
     time: number;
 }
 
-type Context = {
-    context: number;
-};
-
 export default class Timer extends React.Component<TimerProps, TimerState> {
+    private interval: NodeJS.Timer | undefined;
+
     constructor(props: TimerProps) {
         super(props);
         console.log('Constructor');
         this.state = { initial: 0, time: 0 };
     }
 
-    /**
-     * Used to check if the props changed
-     * Don't trigger side effect here, since this could lead to inconsistencies.
-     */
     static getDerivedStateFromProps(props: TimerProps, state: TimerState): TimerState | null {
         console.log('getDerivedStateFromProps');
         if (props.time !== state.initial) {
@@ -35,39 +29,37 @@ export default class Timer extends React.Component<TimerProps, TimerState> {
         return null;
     }
 
-    /**
-     * Used to display the component in the browser
-     */
     render() {
         console.log('render');
         return <div>{this.state.time}</div>;
     }
 
-    /**
-     *Here you can trigger asynchronous requests to servers etc. Side effects allowed.
-     */
     componentDidMount() {
         console.log('componentDidMount');
-        setInterval(() => this.setState((state) => ({ time: state.time + 1 })), 1000);
+        this.interval = setInterval(() => this.setState((state) => ({ ...state, time: state.time + 1 })), 1000);
     }
 
-    /**
-     * Returns true if the component has to be rendered again after a call of setState
-     * @param nextProps
-     * @param nextState
-     * @param nextContext
-     */
-    shouldComponentUpdate(nextProps: Readonly<TimerProps>, nextState: Readonly<TimerState>, nextContext: Context): boolean {
-        console.log('shouldComponentUpdate', nextContext);
+    shouldComponentUpdate(nextProps: Readonly<TimerProps>, nextState: Readonly<TimerState>, nextContext: Date): boolean {
+        console.log('shouldComponentUpdate');
         // we only render component when time is divided by 2
         return nextState.time % 2 === 0;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    getSnapshotBeforeUpdate(prevProps: Readonly<TimerProps>, prevState: Readonly<TimerState>): Context | null {
+    getSnapshotBeforeUpdate(prevProps: Readonly<TimerProps>, prevState: Readonly<TimerState>): Date | null {
         console.log('getSnapshotBeforeUpdate');
-        return {
-            context: 3,
-        };
+        return new Date();
+    }
+
+    componentDidUpdate(prevProps: Readonly<TimerProps>, prevState: Readonly<TimerState>, snapshot?: Date) {
+        console.log('componentDidUpdate');
+        if (prevState.initial !== this.state.initial) {
+            console.log(`${snapshot} Zeit wurde zurückgesetzt`);
+        }
+    }
+
+    componentWillUnmount() {
+        console.log('componentWillUnmount', JSON.stringify(this.state));
+        clearInterval(this.interval);
     }
 }
